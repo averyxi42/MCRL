@@ -26,6 +26,9 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+// tick.PlayerTickEvent.Pre;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -34,12 +37,18 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import java.io.File;
+
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ExampleMod.MODID)
 public class ExampleMod
 {
     // Define mod id in a common place for everything to reference
-    public static final String MODID = "examplemod";
+    public static final String MODID = "mcrl_cl";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
@@ -131,6 +140,25 @@ public class ExampleMod
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+        }
+    }
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
+    public class ClientEventHandler {
+    
+        @SubscribeEvent
+        public static void onClientTick(RenderFrameEvent.Post event) {
+            VideoCapture captureHandler = new VideoCapture();
+            BufferedImage frame = captureHandler.captureFrame();
+                // Process or send the frame as needed
+            // LOGGER.info("capturing frames");
+
+        //     try {
+        //     // retrieve image
+        //     File outputfile = new File("saved.png");
+        //     ImageIO.write(frame, "png", outputfile);
+        // } catch (IOException e) {
+        //     LOGGER.error(MODID, e);
+        // }
         }
     }
 }
