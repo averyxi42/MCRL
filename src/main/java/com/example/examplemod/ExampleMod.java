@@ -150,15 +150,16 @@ public class ExampleMod
             VideoCapture captureHandler = new VideoCapture();
             BufferedImage frame = captureHandler.captureFrame();
                 // Process or send the frame as needed
-            // LOGGER.info("capturing frames");
+            //  LOGGER.info("capturing frames");
+            //  LOGGER.info(frame.toString());
 
-        //     try {
-        //     // retrieve image
-        //     File outputfile = new File("saved.png");
-        //     ImageIO.write(frame, "png", outputfile);
-        // } catch (IOException e) {
-        //     LOGGER.error(MODID, e);
-        // }
+            // try {
+            // // retrieve image
+            // File outputfile = new File("saved.png");
+            // ImageIO.write(frame, "png", outputfile);
+            // } catch (IOException e) {
+            //     LOGGER.error(MODID, e);
+            // }
         }
     }
 }
