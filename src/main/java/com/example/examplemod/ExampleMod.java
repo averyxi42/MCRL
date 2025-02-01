@@ -2,6 +2,7 @@ package com.example.examplemod;
 
 import org.slf4j.Logger;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.client.Minecraft;
@@ -33,6 +34,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 // import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+
+import java.util.HexFormat;
 // import net.neoforged.neoforge.registries.DeferredBlock;
 // import net.neoforged.neoforge.registries.DeferredHolder;
 // import net.neoforged.neoforge.registries.DeferredItem;
@@ -69,6 +72,12 @@ public class ExampleMod
     // public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
     //         .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
     public static BroadcastServer videoServer;
+    public static BroadcastServer mdServer; //metadata
+
+    public static Minecraft mc;
+    public static RenderTarget window;
+
+    public static ByteBuffer mdBuffer = ByteBuffer.allocateDirect(8);
     // // Creates a creative tab with the id "examplemod:example_tab" for the example item, that is placed after the combat tab
     // public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
     //         .title(Component.translatable("itemGroup.examplemod")) //The language key for the title of your CreativeModeTab
@@ -96,10 +105,12 @@ public class ExampleMod
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
-
+        mc = Minecraft.getInstance();
+        // window = mc.getMainRenderTarget();
 
         try{
            videoServer = new BroadcastServer(8888);
+           mdServer = new BroadcastServer(8000);
            LOGGER.info("video server initialized");
         } catch (IOException e){
            LOGGER.error(MODID, e);
@@ -161,6 +172,8 @@ public class ExampleMod
         {
             try{
                 videoServer.handle_connections();
+                mdServer.handle_connections();
+
 
             } catch(IOException e){
                 LOGGER.error("video server connection handling failed", e);
@@ -179,9 +192,22 @@ public class ExampleMod
 
 
             try{
-                byte[] raw_frame = VideoCapture.capture_image("png"); //VideoCapture.captureRaw();
+                // byte[] raw_frame = VideoCapture.capture_image("png");
+                window = mc.getMainRenderTarget();
+
+                
+                mdBuffer.clear().putInt(window.width).putInt(window.height).rewind();
+
+                mdServer.broadcast(mdBuffer);
+
+                
+                byte[] raw_frame = VideoCapture.captureRaw();
+                
                 ByteBuffer buff = ByteBuffer.wrap(raw_frame);
                 videoServer.broadcast(buff);
+
+
+
 
             } catch(IOException e){
                 LOGGER.error("broadcast failure", e);
