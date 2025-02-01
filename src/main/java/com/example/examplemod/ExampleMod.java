@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.logging.LogUtils;
+import java.lang.Math;
 
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 // import net.minecraft.core.registries.Registries;
@@ -47,6 +49,9 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 import java.io.File;
+
+import net.minecraft.world.entity.player.Input;
+import com.mojang.blaze3d.platform.InputConstants;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ExampleMod.MODID)
@@ -173,8 +178,31 @@ public class ExampleMod
             try{
                 videoServer.handle_connections();
                 mdServer.handle_connections();
+                if(mc.player!=null){
+                    mc.player.turn((Math.random()-0.5)*5, (Math.random()-0.5)*5);
+                    // mc.player.input.keyPresses = new Input(
+                    //     true,
+                    //     true,
+                    //     false,
+                    //     false,
+                    //     true,
+                    //     true,
+                    //     false
+                    // );
+                    if(Math.random()<0.8){
+                        if(!mc.options.keyAttack.isDown())
+                            KeyMapping.click(mc.options.keyAttack.getKey());
+                        KeyMapping.set(mc.options.keyAttack.getKey(), true);
+                    }
+                    else{
+                        KeyMapping.set(mc.options.keyAttack.getKey(),false);
+                    }
+                    
 
-
+                    if(Math.random()<0.05)
+                        KeyMapping.set(mc.options.keyUp.getKey(),true);
+                    //mc.options.keyAttack.click(InputConstants.getKey("key.mouse.left"));
+                }
             } catch(IOException e){
                 LOGGER.error("video server connection handling failed", e);
             }
