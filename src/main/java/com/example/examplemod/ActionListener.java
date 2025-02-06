@@ -2,18 +2,20 @@ package com.example.examplemod;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
+// import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 
-public class BroadcastServer {
+public class ActionListener {
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
-    public BroadcastServer(int port) throws IOException {
+    private Scanner sc;
+    public ActionListener(int port) throws IOException {
         // Create a ServerSocketChannel
         serverSocketChannel = ServerSocketChannel.open();
 
@@ -28,37 +30,28 @@ public class BroadcastServer {
         // Register the channel with the selector for OP_ACCEPT events
         serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-        System.out.println("Server started listening");
+        System.out.println("Action Listener started listening");
     }
 
-    public void broadcast(ByteBuffer msg) throws IOException{
+    public void read() throws IOException{
         // Check if any registered channels are ready for I/O operations
-        int readyChannels = selector.selectNow();
+        // int readyChannels = selector.selectNow();
 
-        if (readyChannels == 0) {
-            return;
-        }
-        // Get the set of keys that are ready
-        Set<SelectionKey> selectedKeys = selector.selectedKeys();
-        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
-        while (keyIterator.hasNext()) {
-            SelectionKey key = keyIterator.next();
-
-            if (key.isWritable()) {
-                SocketChannel channel = (SocketChannel) key.channel();
-                try {
-                    channel.write(msg);
-
-                } catch (IOException e) {
-                    key.cancel();
-                    throw e;
-                    // TODO: handle exception
-                }
-            } 
-            // Remove the processed key from the set
-            keyIterator.remove();
-        }
+        // if (readyChannels == 0) {
+        //     return;
+        // }
+        // // Get the set of keys that are ready
+        // Set<SelectionKey> selectedKeys = selector.selectedKeys();
+        // Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+        if(sc ==null) return;
+        
+        while(sc.hasNextLine()){
+            String input_type = sc.nextLine();
+            System.out.println(input_type);
+            if(input_type.equals("mouse")){
+            }
+        } 
+  
     }
 
     public void handle_connections() throws IOException{
@@ -72,25 +65,40 @@ public class BroadcastServer {
         Set<SelectionKey> selectedKeys = selector.selectedKeys();
         Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
 
-        while (keyIterator.hasNext()) {
+        while (keyIterator.hasNext() & sc==null) {
             SelectionKey key = keyIterator.next();
             if (key.isAcceptable()) {
                 // Accept the new connection
                 ServerSocketChannel server = (ServerSocketChannel) key.channel();
                 SocketChannel client = server.accept();
-
-                // Set the client channel to non-blocking
+                
+                // // Set the client channel to non-blocking
                 client.configureBlocking(false);
-
-                // Register the client with the selector for OP_READ events
-                client.register(selector, SelectionKey.OP_WRITE);
+                // // Register the client with the selector for OP_READ events
+                // client.register(selector, SelectionKey.OP_READ);
+                sc = new Scanner(client);
 
                 System.out.println("Accepted a new connection from: " + client.getRemoteAddress());
             } 
-            // Remove the processed key from the set
-            keyIterator.remove();
         }
         
     }
-}
 
+    public static void main(String[] args){
+        System.out.println("hi");
+        ActionListener listener;
+        try {
+            listener = new ActionListener(8083);
+            while(true){
+                listener.handle_connections();
+                listener.read();
+
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(e);
+        }
+
+    }
+
+}

@@ -3,8 +3,12 @@ package com.example.examplemod;
 
 // import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+
 // import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
+
 // import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -23,7 +27,10 @@ import java.io.ByteArrayOutputStream;
 
 public class VideoCapture {
 
+    // private static boolean drawMouse = true;
+
     public static byte[] captureRaw(){
+        // if(drawMouse) drawMouse();
         Minecraft mc = Minecraft.getInstance();
         RenderTarget framebuffer = mc.getMainRenderTarget();
 
@@ -42,6 +49,13 @@ public class VideoCapture {
         buffer.get(imageBytes);
         return imageBytes;
     }
+
+    // private static void drawMouse(){
+    //     Minecraft mc = Minecraft.getInstance();
+    //     RenderTarget framebuffer = mc.getMainRenderTarget();
+    //     framebuffer.bindWrite(true);
+    //     GuiGraphics.
+    // }
 
 
     public static BufferedImage captureFrame() {

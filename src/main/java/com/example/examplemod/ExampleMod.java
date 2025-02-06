@@ -8,6 +8,7 @@ import java.lang.Math;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
 // import net.minecraft.core.registries.Registries;
 // import net.minecraft.network.chat.Component;
@@ -31,12 +32,15 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 // tick.PlayerTickEvent.Pre;
 import net.neoforged.neoforge.common.NeoForge;
 // import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+// import net.neoforged.neoforge.event.entity.player.
 import java.util.HexFormat;
 // import net.neoforged.neoforge.registries.DeferredBlock;
 // import net.neoforged.neoforge.registries.DeferredHolder;
@@ -111,6 +115,7 @@ public class ExampleMod
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
         mc = Minecraft.getInstance();
+
         // window = mc.getMainRenderTarget();
 
         try{
@@ -126,6 +131,7 @@ public class ExampleMod
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
@@ -152,6 +158,7 @@ public class ExampleMod
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event)
     {
+
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
     }
@@ -167,19 +174,29 @@ public class ExampleMod
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
+
+        // @SubscribeEvent
+        // public static void onRegisterParticleProviders(RegisterParticleProvidersEvent event){
+        //     mc.getWindow().setWidth(640);
+        //     mc.getWindow().setHeight(480);
+        //     // mc.resizeDisplay(); 
+        // }
     }
 
-    @EventBusSubscriber(modid = MODID,value = Dist.CLIENT,bus = EventBusSubscriber.Bus.GAME)
+    // @EventBusSubscriber(modid = MODID,value = Dist.CLIENT,bus = EventBusSubscriber.Bus.GAME)
+
+    @EventBusSubscriber(modid = MODID,bus = EventBusSubscriber.Bus.GAME,value = Dist.CLIENT)
     public static class GameTickEvents
     {
         @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Pre event)
         {
+            // System.out.println("client tick");
             try{
                 videoServer.handle_connections();
                 mdServer.handle_connections();
                 if(mc.player!=null){
-                    mc.player.turn((Math.random()-0.5)*5, (Math.random()-0.5)*5);
+                    // mc.player.turn((Math.random()-0.5)*5, (Math.random()-0.5)*5);
                     // mc.player.input.keyPresses = new Input(
                     //     true,
                     //     true,
@@ -189,6 +206,15 @@ public class ExampleMod
                     //     true,
                     //     false
                     // );
+                    if(mc.mouseHandler.isMouseGrabbed()){
+                        mc.player.turn(-4, 0);
+
+                    }else{
+                        // @ts-ignore
+                        mc.mouseHandler.onMove(mc.getWindow().getWindow(), 854*Math.random(), 540*Math.random());
+                        KeyMapping.click(mc.options.keyAttack.getKey());
+          
+                    }
                     if(Math.random()<0.8){
                         if(!mc.options.keyAttack.isDown())
                             KeyMapping.click(mc.options.keyAttack.getKey());
@@ -198,31 +224,30 @@ public class ExampleMod
                         KeyMapping.set(mc.options.keyAttack.getKey(),false);
                     }
                     
-
-                    if(Math.random()<0.05)
-                        KeyMapping.set(mc.options.keyUp.getKey(),true);
+                    // if(Math.random()<0.05)
+                    //     KeyMapping.set(mc.options.keyUp.getKey(),true);
                     //mc.options.keyAttack.click(InputConstants.getKey("key.mouse.left"));
                 }
             } catch(IOException e){
                 LOGGER.error("video server connection handling failed", e);
             }
         }
-    }
 
-
-    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
-    public class ClientEventHandler {
-    
         @SubscribeEvent
         public static void onClientTick(RenderFrameEvent.Post event) {
             // VideoCapture captureHandler = new VideoCapture();
             //BufferedImage frame = VideoCapture.captureFrame();
+            // System.out.println("render tick");
+
+            // if(mc.getWindow().getHeight()!= mc.getMainRenderTarget().height){
+            //     mc.resizeDisplay();
+            // }
 
 
             try{
                 // byte[] raw_frame = VideoCapture.capture_image("png");
                 window = mc.getMainRenderTarget();
-
+                
                 
                 mdBuffer.clear().putInt(window.width).putInt(window.height).rewind();
 
@@ -253,4 +278,6 @@ public class ExampleMod
             // }
         }
     }
+
+
 }

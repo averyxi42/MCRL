@@ -9,7 +9,12 @@ video_sock.connect(('localhost',8888))
 import cv2
 # md_sock.setblocking(True)
 import numpy as np
+import time
+t = 0.0
 while True:
+    dt = time.time()-t
+    t = time.time()
+    print("fps: %d" % (1.0/dt))
     try:
         md = md_sock.recv(8)
         # print(md)
@@ -19,12 +24,13 @@ while True:
 
         w = int.from_bytes(md[0:4],'big')
         h = int.from_bytes(md[4:8],'big')
-        # print("w %d, h %d" %(w,h))
+        #print("w %d, h %d" %(w,h))
         msg = video_sock.recv(10000000000)
         if(len(msg)!=w*h*4):
             print("oops wrong frame")
         else:
             arr = np.frombuffer(msg,dtype=np.uint8).reshape((h,w,4))[:,:,[2,1,0,3]]
+            #img = cv2.resize(arr, None, fx=2, fy=2, interpolation=cv2.INTER_NEAREST)
             cv2.imshow("stream",np.flip(arr,axis=0))
             
 
