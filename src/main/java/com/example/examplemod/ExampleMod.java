@@ -6,6 +6,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.logging.LogUtils;
 import java.lang.Math;
 
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -34,6 +35,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.event.ClientPauseChangeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 // tick.PlayerTickEvent.Pre;
 import net.neoforged.neoforge.common.NeoForge;
@@ -82,6 +84,7 @@ public class ExampleMod
     //         .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
     public static BroadcastServer videoServer;
     public static BroadcastServer mdServer; //metadata
+    public static LineListener lineListener;
 
     public static Minecraft mc;
     public static RenderTarget window;
@@ -121,6 +124,8 @@ public class ExampleMod
         try{
            videoServer = new BroadcastServer(8888);
            mdServer = new BroadcastServer(8000);
+           lineListener = new LineListener(8083,new ActionModel());
+           
            LOGGER.info("video server initialized");
         } catch (IOException e){
            LOGGER.error(MODID, e);
@@ -182,6 +187,7 @@ public class ExampleMod
         //     // mc.resizeDisplay(); 
         // }
     }
+    
 
     // @EventBusSubscriber(modid = MODID,value = Dist.CLIENT,bus = EventBusSubscriber.Bus.GAME)
 
@@ -195,7 +201,9 @@ public class ExampleMod
             try{
                 videoServer.handle_connections();
                 mdServer.handle_connections();
+                lineListener.handle_connections();
                 if(mc.player!=null){
+                    lineListener.read();
                     // mc.player.turn((Math.random()-0.5)*5, (Math.random()-0.5)*5);
                     // mc.player.input.keyPresses = new Input(
                     //     true,
@@ -206,23 +214,23 @@ public class ExampleMod
                     //     true,
                     //     false
                     // );
-                    if(mc.mouseHandler.isMouseGrabbed()){
-                        mc.player.turn(-4, 0);
+                    // if(mc.mouseHandler.isMouseGrabbed()){
+                    //     mc.player.turn(-4, 0);
 
-                    }else{
-                        // @ts-ignore
-                        mc.mouseHandler.onMove(mc.getWindow().getWindow(), 854*Math.random(), 540*Math.random());
-                        KeyMapping.click(mc.options.keyAttack.getKey());
+                    // }else{
+                    //     // @ts-ignore
+                    //     mc.mouseHandler.onMove(mc.getWindow().getWindow(), 854*Math.random(), 540*Math.random());
+                    //     KeyMapping.click(mc.options.keyAttack.getKey());
           
-                    }
-                    if(Math.random()<0.8){
-                        if(!mc.options.keyAttack.isDown())
-                            KeyMapping.click(mc.options.keyAttack.getKey());
-                        KeyMapping.set(mc.options.keyAttack.getKey(), true);
-                    }
-                    else{
-                        KeyMapping.set(mc.options.keyAttack.getKey(),false);
-                    }
+                    // }
+                    // if(Math.random()<0.8){
+                    //     if(!mc.options.keyAttack.isDown())
+                    //         KeyMapping.click(mc.options.keyAttack.getKey());
+                    //     KeyMapping.set(mc.options.keyAttack.getKey(), true);
+                    // }
+                    // else{
+                    //     KeyMapping.set(mc.options.keyAttack.getKey(),false);
+                    // }
                     
                     // if(Math.random()<0.05)
                     //     KeyMapping.set(mc.options.keyUp.getKey(),true);
@@ -234,7 +242,16 @@ public class ExampleMod
         }
 
         @SubscribeEvent
+        public static void onPause(ClientPauseChangeEvent.Post event){
+            if(event.isPaused())
+                System.out.println("trying to cancel pause");
+                mc.pause = false;
+                // event.setCanceled(true);
+        }
+
+        @SubscribeEvent
         public static void onClientTick(RenderFrameEvent.Post event) {
+            mc.gameRenderer.lastActiveTime = Util.getMillis();
             // VideoCapture captureHandler = new VideoCapture();
             //BufferedImage frame = VideoCapture.captureFrame();
             // System.out.println("render tick");

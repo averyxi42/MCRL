@@ -1,9 +1,11 @@
 package com.example.examplemod;
 
+import java.util.function.Consumer;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
-public class ActionModel {
+public class ActionModel implements Consumer<String>{
     private static Minecraft mc = Minecraft.getInstance();
 
     // public ActionHandler(Minecraft mc){
@@ -32,5 +34,21 @@ public class ActionModel {
             // @ts-ignore
             mc.mouseHandler.onMove(mc.getWindow().getWindow(), mc.getWindow().getScreenWidth()*x, mc.getWindow().getScreenHeight()*y);
         }
+    }
+    @Override
+    public void accept(String arg0) {
+        String[] param = arg0.split(" ");
+        try {
+            if(param[0].equals("mouse")){
+                setMousePos(Double.parseDouble(param[1]),Double.parseDouble(param[2]));
+            }
+            else{
+                setKey(param[0], Integer.parseInt(param[1])!=0);
+            } 
+        } catch (Exception e) {
+            System.out.println(e);
+            // TODO: handle exception
+        }
+
     }
 }

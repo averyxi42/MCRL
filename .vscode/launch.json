@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "LineListener",
+      "request": "launch",
+      "mainClass": "com.example.examplemod.LineListener",
+      "projectName": "MCRL"
+    },
+    {
+      "type": "java",
       "name": "ActionListener",
       "request": "launch",
       "mainClass": "com.example.examplemod.ActionListener",
